@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Install packages
@@ -82,8 +83,14 @@ jobs:
           mkdir -p ~/.arm/Packs/.Web
           wget -O ~/.arm/Packs/.Web/ARM.CMSIS.pdsc https://www.keil.com/pack/ARM.CMSIS.pdsc
           echo "::add-matcher::.github/packchk.json"
-          /bin/bash ./Scripts/git/gen_pack.sh
+          /bin/bash ./Scripts/git/gen_pack.sh -k
           echo "::remove-matcher owner=packchk::"
+      
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+          limit-access-to-actor: true
       
       - name: Archive pack
         if: ${{ github.event_name != 'release' }}
